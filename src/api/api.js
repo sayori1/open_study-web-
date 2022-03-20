@@ -1,3 +1,8 @@
+import axios from "axios";
+
+const baseURL = "http://localhost:3000";
+console.log(baseURL);
+
 export async function fetchCourses(tag) {
   console.log(tag);
   if (tag == "Популярное")
@@ -129,4 +134,9 @@ export async function fetchLesson(id) {
       ],
     ],
   };
+}
+
+export async function enrollCourse(id, login, token) {
+  const result = axios.post(baseURL + "/me/enrollCourse", { login, token, id });
+  return result;
 }

@@ -8,6 +8,9 @@
 import NavBar from "./components/NavBar.vue";
 export default {
   components: { NavBar },
+  async mounted() {
+    await this.$store.dispatch("auth/refresh");
+  },
 };
 </script>
 <style>

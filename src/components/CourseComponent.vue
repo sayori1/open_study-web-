@@ -1,5 +1,5 @@
 <template>
-  <div class="card" @click="$router.push(`/course/${course._id}`)">
+  <div class="card" @click="touch">
     <div
       style="display: flex; flex-direction: row; justify-content: space-between"
     >
@@ -32,6 +32,25 @@ export default {
   props: {
     course: {
       type: Object,
+    },
+  },
+  methods: {
+    touch() {
+      if (!this.$store.getters["auth/isLoggedIn"]) {
+        this.$message({
+          title: "",
+          message: "Необходимо авторизоваться!",
+          duration: 2000,
+          type: "info",
+        });
+        this.$router.replace(`/auth`);
+        return;
+      }
+      let _course = this.$store.state.auth.user.userCourses.filter((item) => {
+        return item._id == this.course._id;
+      })[0];
+      if (_course) this.$router.push(`/study/${this.course._id}`);
+      else this.$router.push(`/course/${this.course._id}`);
     },
   },
   computed: {

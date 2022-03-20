@@ -2,6 +2,10 @@ import { createRouter, createWebHistory } from "vue-router";
 
 const routes = [
   {
+    path: "/",
+    redirect: "/courses",
+  },
+  {
     path: "/courses",
     component: () => import("../views/CoursesView.vue"),
   },
@@ -16,6 +20,10 @@ const routes = [
   {
     path: "/auth",
     component: () => import("../views/AuthView.vue"),
+  },
+  {
+    path: "/profile",
+    component: () => import("../views/ProfileView.vue"),
   },
   {
     path: "/study/:id",
