@@ -1,81 +1,87 @@
 import axios from "axios";
+import { baseURL } from "../../api/api";
 export default {
   namespaced: true,
-
   state: {
-    token: localStorage.getItem("token") || null,
-    login: localStorage.getItem("login") || null,
-    user: {},
+    token: localStorage.getItem("token"),
+    user: (() => {
+      let json = {};
+      try {
+        json = JSON.parse(localStorage.getItem("user"));
+      } catch (_) {
+        ("");
+      }
+      return json;
+    })(),
   },
   getters: {
-    isLoggedIn: ({ token, user }) => !!token || user == null || user == {},
+    isLoggedIn: ({ token }) => !!token,
   },
   actions: {
-    async login({ commit, state }, data) {
-      const baseURL = "http://localhost:3000";
+    async login({ commit }, data) {
       var response = await axios.post(baseURL + "/auth/login", data);
-
       if (response.status == 200) {
-        state.user = response.data.user;
-        commit("saveSession", response);
-        return true;
+        commit("saveSession", response.data);
       } else {
-        throw new Error(response.status + " " + response.data);
+        throw Error(response.status + " " + response.data);
       }
+      return response;
     },
-    async register({ commit, state }, data) {
-      const baseURL = "http://localhost:3000";
-      if (data.password != data.repassword) {
-        throw new Error("Пароли не совпадают");
-      }
+    async register({ commit }, data) {
       var response = await axios.post(baseURL + "/auth/register", data);
       if (response.status == 200) {
-        state.user = response.data.user;
-        commit("saveSession", response);
-        return true;
+        commit("saveSession", response.data);
       } else {
-        throw new Error(response.status + " " + response.data);
+        throw Error(response.status + " " + response.data);
       }
+      return response;
     },
     async refresh(context) {
-      const baseURL = "http://localhost:3000";
-      const response = await axios.post(baseURL + "/me/user", {
-        login: context.state.login,
-        token: context.state.token,
+      if (!context.getters.isLoggedIn) return;
+      const response = await axios.get(baseURL + "/rest/user", {
+        params: {
+          login: context.state.user.login,
+          token: context.state.token,
+        },
       });
-      console.log(response);
-      if (response.status == 200) context.state.user = response.data;
+
+      if (response.status == 200) context.commit("saveSession", response.data);
       else {
-        context.dispatch("exit");
+        context.dispatch("logout");
+        throw Error(response.status + " " + response.data);
       }
-      console.log(context.state.user);
+      return response;
     },
     async save(context) {
-      const baseURL = "http://localhost:3000";
-      const response = await axios.put(baseURL + "/me/user", {
-        login: context.state.login,
-        token: context.state.token,
-        user: context.state.user,
-      });
-      if (response.status == 200) context.state.user = response.data;
-      console.log(context.state.user);
+      const response = await axios.put(
+        baseURL + "/rest/user",
+        context.state.user
+      );
+      return response;
     },
-    exit(context) {
+    logout(context) {
       context.commit("clear");
     },
   },
   mutations: {
-    clear(state) {
-      state.login = null;
-      state.token = null;
-      state.user = {};
-      localStorage.clear();
+    saveSession(state, data) {
+      if (data.token) {
+        state.token = data.token;
+        localStorage.setItem("token", state.token);
+        axios.defaults.headers.common["Authorization"] = data.token;
+      }
+
+      state.user = data.user;
+      localStorage.setItem("user", JSON.stringify(state.user));
     },
-    saveSession(state, response) {
-      state.token = response.data.token;
-      state.login = response.data.user.login;
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("login", response.data.user.login);
+    clear(state) {
+      state.token = null;
+      localStorage.removeItem("token");
+
+      state.user = null;
+      localStorage.removeItem("user");
+
+      delete axios.defaults.headers.common["Authorization"];
     },
   },
 };

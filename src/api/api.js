@@ -1,10 +1,8 @@
 import axios from "axios";
 
-const baseURL = "http://localhost:3000";
-console.log(baseURL);
+export const baseURL = "http://localhost:3000";
 
 export async function fetchCourses(tag) {
-  console.log(tag);
   if (tag == "Популярное")
     return [
       {

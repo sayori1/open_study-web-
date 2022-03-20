@@ -31,7 +31,6 @@ export default {
     return {};
   },
   mounted() {
-    console.log(this.$store);
     this.$store.dispatch("auth/refresh");
   },
   methods: {

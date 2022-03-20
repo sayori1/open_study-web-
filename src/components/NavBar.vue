@@ -12,7 +12,9 @@
     <el-menu-item index="1" name="Курсы">Курсы</el-menu-item>
     <el-menu-item index="2" name="Блог">Блог</el-menu-item>
     <el-menu-item index="3" name="Войти">{{
-      this.$store.getters["auth/isLoggedIn"] ? $store.state.auth.login : "Войти"
+      this.$store.getters["auth/isLoggedIn"]
+        ? $store.state.auth.user.login
+        : "Войти"
     }}</el-menu-item>
   </el-menu>
 </template>
