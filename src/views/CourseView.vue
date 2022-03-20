@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { fetchCourse } from "@/api/api";
+import { enrollCourse, fetchCourse } from "@/api/api";
 
 export default {
   components: {},
@@ -78,17 +78,22 @@ export default {
     this.course = await fetchCourse(0);
   },
   methods: {
-    enroll() {
-      this.course.enrolled = true;
-      this.$notify({
-        title: "Успех!",
-        message: "Вы успешно записались на курс!",
-        duration: 2000,
-        type: "success",
-      });
-      setInterval(() => {
+    async enroll() {
+      const result = await enrollCourse(
+        this.course._id,
+        this.$store.state.auth.login,
+        this.$store.state.auth.token
+      );
+      if (result.status == 200) {
+        this.$store.state.auth.user = result.data;
+        this.$notify({
+          title: "Успех!",
+          message: "Вы успешно записались на курс!",
+          duration: 2000,
+          type: "success",
+        });
         this.$router.push("/study/" + this.course._id);
-      }, 1000);
+      }
     },
   },
 };
