@@ -11,9 +11,10 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .wrapper {
   width: 70%;
   margin: 0px auto;
+  padding-top: 100px;
 }
 </style>

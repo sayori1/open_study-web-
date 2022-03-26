@@ -99,7 +99,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .wrapper {
   padding-top: 100px;
   width: 70%;
