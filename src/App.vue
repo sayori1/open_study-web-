@@ -1,15 +1,15 @@
 <template>
   <div>
     <NavBar></NavBar>
-    <router-view />
+    <router-view class="global" />
   </div>
 </template>
 <script>
 import NavBar from "./components/NavBar.vue";
 export default {
   components: { NavBar },
-  async mounted() {
-    await this.$store.dispatch("auth/refresh");
+  mounted() {
+    this.$store.dispatch("auth/refresh");
   },
 };
 </script>

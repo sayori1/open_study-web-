@@ -29,6 +29,10 @@ const routes = [
     path: "/study/:id",
     component: () => import("../views/StudyView.vue"),
   },
+  {
+    path: "/admin",
+    component: () => import("../views/Admin/AdminView.vue"),
+  },
 ];
 
 const router = createRouter({

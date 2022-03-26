@@ -40,7 +40,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .wrapper {
   width: 80%;
   margin: 0px auto;

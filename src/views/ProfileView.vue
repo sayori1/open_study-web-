@@ -31,7 +31,6 @@ export default {
     return {};
   },
   mounted() {
-    console.log(this.$store);
     this.$store.dispatch("auth/refresh");
   },
   methods: {
@@ -43,10 +42,10 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .wrapper {
-  margin-top: 100px;
   width: 70%;
+  padding-top: 100px;
   margin: 0px auto;
 }
 .topbar {

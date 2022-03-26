@@ -87,42 +87,40 @@ export default {
   },
   methods: {
     async _login() {
-      let result = false;
-      try {
-        result = await this.$store.dispatch("auth/login", this.login);
-      } catch (e) {
-        this.$message({
-          type: "error",
-          message: e,
+      const response = await this.$store
+        .dispatch("auth/login", this.login)
+        .catch((err) => {
+          this.$message({
+            type: "error",
+            message: err,
+          });
         });
-      } finally {
-        if (result == true) {
-          this.$router.push("/courses");
-        }
-      }
+      if (response.status == 200) this.$router.push("/courses");
     },
     async _register() {
-      let result = false;
-      try {
-        result = await this.$store.dispatch("auth/register", this.register);
-      } catch (e) {
+      const response = await this.$store
+        .dispatch("auth/register", this.register)
+        .catch((err) => {
+          this.$message({
+            type: "error",
+            message: err,
+          });
+        });
+      if (response.status == 200) this.$router.push("/courses");
+      else
         this.$message({
           type: "error",
-          message: e,
+          message: response.data,
         });
-      } finally {
-        if (result == true) {
-          this.$router.push("/courses");
-        }
-      }
     },
   },
 };
 </script>
 
-<style>
+<style scoped>
 .wrapper {
   width: 70%;
   margin: 0px auto;
+  padding-top: 100px;
 }
 </style>

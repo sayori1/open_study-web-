@@ -22,9 +22,7 @@ export default {
   props: {
     render: [],
   },
-  mounted() {
-    console.log(this.render);
-  },
+  mounted() {},
 };
 </script>
 <style scoped></style>
