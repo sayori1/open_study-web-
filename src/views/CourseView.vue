@@ -40,7 +40,7 @@
 
     <h3>Контент курса:</h3>
     <el-tree
-      :data="course.content"
+      :data="course.lessons"
       :props="defaultProps"
       @node-click="handleNodeClick"
     ></el-tree>
@@ -75,7 +75,7 @@ export default {
     };
   },
   async mounted() {
-    this.course = await fetchCourse(0);
+    this.course = await fetchCourse(this.$route.params.id);
   },
   methods: {
     async enroll() {
