@@ -16,6 +16,9 @@
         ? $store.state.auth.user.login
         : "Войти"
     }}</el-menu-item>
+    <el-menu-item index="4" name="Админ панель" v-if="isAdmin"
+      >Админ панель
+    </el-menu-item>
   </el-menu>
 </template>
 <script>
@@ -27,12 +30,16 @@ export default {
         "/blog": "2",
         "/auth": "3",
         "/profile": "3",
+        "/admin": "4",
       },
     };
   },
   computed: {
     activeIndex() {
       return this.routes[this.$route.path];
+    },
+    isAdmin() {
+      return this.$store.getters["auth/isAdmin"];
     },
   },
   methods: {
@@ -47,6 +54,9 @@ export default {
         if (this.$store.getters["auth/isLoggedIn"])
           this.$router.replace("/profile");
         else this.$router.replace("/auth");
+      }
+      if (i == 4) {
+        if (this.$store.getters["auth/isAdmin"]) this.$router.replace("/admin");
       }
     },
   },
