@@ -8,7 +8,7 @@
       ></el-progress>
 
       <el-tree
-        :data="this.course.content"
+        :data="this.course.lessons"
         :props="defaultProps"
         @node-click="handleNodeClick"
       ></el-tree>
@@ -21,27 +21,27 @@
       <el-divider style="margin: 5px"></el-divider>
 
       <StudyRender
-        :render="currentLesson.pages[active]"
+        :render="currentLesson[active]"
         style="margin-bottom: 20px"
       ></StudyRender>
 
+      <div v-if="lessonEnd">
+        <h1>Вы завершили урок! 🎆</h1>
+      </div>
+
       <el-steps :active="active" finish-status="success">
-        <el-step
-          v-for="n in currentLesson.pages.length"
-          :key="n"
-          :title="n"
-        ></el-step>
+        <el-step v-for="n in currentLesson.length" :key="n"></el-step>
       </el-steps>
       <el-button style="margin-top: 12px" @click="back">Назад</el-button>
-      <el-button type="success" style="margin-top: 12px" @click="next"
-        >Далее</el-button
-      >
+      <el-button type="success" style="margin-top: 12px" @click="next">{{
+        lessonEnd ? "Завершить урок" : "Далее"
+      }}</el-button>
     </div>
   </div>
 </template>
 
 <script>
-import { fetchLesson, fetchUserCourse } from "@/api/api";
+import { fetchUserCourse } from "@/api/api";
 import StudyRender from "@/components/StudyRender.vue";
 
 export default {
@@ -59,34 +59,37 @@ export default {
       lessonLoading: false,
     };
   },
+  computed: {
+    lessonEnd() {
+      return this.active == this.currentLesson.length;
+    },
+  },
   methods: {
     next() {
-      if (this.active++ > 2) this.active = 2;
+      if (this.lessonEnd) {
+        console.log("sdf");
+      } else if (this.active++ > this.currentLesson.length)
+        this.active = this.currentLesson.length;
     },
     back() {
       if (this.active-- <= 0) this.active = 0;
     },
-    async handleNodeClick(t) {
+    handleNodeClick(t) {
       if ("id" in t) {
         this.currentLessonLabel = t.label;
-        await this.loadLesson(t.id);
+        this.currentLesson = t.content;
       }
-    },
-    async loadLesson(id) {
-      this.lessonLoading = true;
-      this.currentLesson = await fetchLesson(id);
-      this.lessonLoading = false;
     },
   },
   async mounted() {
-    this.course = await fetchUserCourse(0);
+    this.course = await fetchUserCourse(this.$route.params.id);
   },
 };
 </script>
 
 <style scoped>
 .wrapper {
-  margin-top: 100px;
+  padding-top: 100px;
   width: 90%;
   margin: 0px auto;
   display: flex;
@@ -99,5 +102,7 @@ export default {
   width: 100%;
   padding: 20px;
   flex-direction: column;
+  align-items: left;
+  text-align: left;
 }
 </style>

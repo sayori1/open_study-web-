@@ -28,23 +28,24 @@
         :min="1"
       ></el-input-number>
       <el-input
-        v-model="lessonName"
-        placeholder="Lesson name"
+        v-model="metadata[current - 1]['heading']"
+        placeholder="Название главы"
         style="width: 300px; margin-left: 10px"
       ></el-input>
       <el-input
-        v-model="lessonChapter"
-        placeholder="Lesson heading"
+        v-model="metadata[current - 1]['name']"
+        placeholder="Название урока"
         style="width: 300px; margin-left: 10px"
       ></el-input>
     </div>
 
     <div style="display: flex; flex-direction: row; margin-top: 10px">
-      <el-button @click="addCode('Title')">Title</el-button>
+      <el-button @click="addCode('Heading')">Heading</el-button>
       <el-button @click="addCode('Body')">Body</el-button>
       <el-button @click="addCode('Quiz')">Quiz</el-button>
       <el-button @click="addCode('Memento')">Memento</el-button>
       <el-button @click="addCode('Visum')">Visum</el-button>
+      <el-button @click="addCode('New page')">New page</el-button>
     </div>
     <div style="display: flex; flex-direction: row">
       <v-ace-editor
@@ -109,6 +110,7 @@ export default {
       showDialog: false,
 
       content: ["", ""],
+      metadata: [{}, {}],
       data: [],
       status: "",
       id: null,
@@ -119,6 +121,11 @@ export default {
   watch: {
     current(v) {
       this.content[v - 1] += "";
+      if (v > this.count) {
+        this.count += 1;
+        this.content.push("");
+        this.metadata.push({});
+      }
     },
   },
   methods: {
@@ -132,14 +139,47 @@ export default {
         }
       } catch (e) {
         this.status = c + e;
-        return;
+        return null;
       }
       this.status = "Успешно отпарсено";
+      return this.formTree();
     },
+    formTree() {
+      let tree = [];
+
+      let findHeading = (heading) => {
+        for (let t in tree) if (tree[t].label == heading) return t;
+        return -1;
+      };
+
+      for (let i in this.metadata) {
+        const headingInTree = findHeading(this.metadata[i].heading);
+        if (headingInTree != -1) {
+          tree[headingInTree].children.push({
+            label: this.metadata[i].name,
+            id: i,
+            content: this.data[i],
+          });
+        } else {
+          tree.push({
+            label: this.metadata[i].heading,
+            children: [
+              {
+                id: i,
+                label: this.metadata[i].heading,
+                content: this.data[i],
+              },
+            ],
+          });
+        }
+      }
+      return tree;
+    },
+
     addCode(t) {
-      if (t == "Title") {
+      if (t == "Heading") {
         this.content[this.current - 1] += `{
-  "type": "Title",
+  "type": "Heading",
   "text": ""
 },
 `;
@@ -170,17 +210,22 @@ export default {
   "script": ""
 },
 `;
+      } else if (t == "New page") {
+        this.content[this.current - 1] += `[],
+`;
       }
     },
 
     async createCourse() {
-      this.parseAndSave();
+      let tree = this.parseAndSave();
+      if (tree == null) return;
       const result = await axios.post(baseURL + "/rest/course", {
         name: this.courseName,
         shortDescription: this.shortCourseDescription,
         description: this.courseDescription,
-        lessons: this.data,
-        lessonsRaw: this.content,
+        lessons: tree,
+        contentRaw: this.content,
+        metadataRaw: this.metadata,
         category: this.category,
       });
 
@@ -190,6 +235,8 @@ export default {
           message: "Congrats, you created a course",
           type: "success",
         });
+        console.log(result);
+        this.id = result.data.id;
       } else {
         this.$message({
           showClose: true,
@@ -199,14 +246,16 @@ export default {
       }
     },
     async saveCourse() {
-      this.parseAndSave();
+      let tree = this.parseAndSave();
+      if (tree == null) return;
       const result = await axios.put(baseURL + "/rest/course", {
         _id: this.id,
         name: this.courseName,
         shortDescription: this.shortCourseDescription,
         description: this.courseDescription,
-        lessons: this.data,
-        lessonsRaw: this.content,
+        lessons: tree,
+        contentRaw: this.content,
+        metadataRaw: this.metadata,
         category: this.category,
       });
 
@@ -224,12 +273,6 @@ export default {
         });
       }
     },
-    async fetchCategories() {
-      var response = await axios.get(baseURL + "rest/category");
-      console.log(response);
-      if (response.status == 200)
-        this.categories = response.data.map((item) => item.name);
-    },
     async tryToFetchCourse() {
       if (this.args != null) {
         const course = await axios.get(baseURL + "/rest/course", {
@@ -245,7 +288,8 @@ export default {
         this.courseName = course.data.name;
         this.courseDescription = course.data.description;
         this.shortCourseDescription = course.data.shortDescription;
-        this.content = course.data.lessonsRaw;
+        this.content = course.data.contentRaw;
+        this.metadata = course.data.metadataRaw;
         this.id = course.data._id;
         this.category = course.data.category;
       }

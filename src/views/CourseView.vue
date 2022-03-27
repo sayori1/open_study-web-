@@ -85,7 +85,7 @@ export default {
         this.$store.state.auth.token
       );
       if (result.status == 200) {
-        this.$store.state.auth.user = result.data;
+        await this.$store.dispatch("auth/refresh");
         this.$notify({
           title: "Успех!",
           message: "Вы успешно записались на курс!",

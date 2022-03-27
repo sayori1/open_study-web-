@@ -66,6 +66,7 @@ export default {
   },
   mutations: {
     saveSession(state, data) {
+      console.log(data);
       if (data.token) {
         state.token = data.token;
         localStorage.setItem("token", state.token);
