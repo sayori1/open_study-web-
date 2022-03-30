@@ -81,9 +81,10 @@ export default {
     async enroll() {
       const result = await enrollCourse(
         this.course._id,
-        this.$store.state.auth.login,
+        this.$store.state.auth.user.login,
         this.$store.state.auth.token
       );
+      
       if (result.status == 200) {
         await this.$store.dispatch("auth/refresh");
         this.$notify({
