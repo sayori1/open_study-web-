@@ -8,41 +8,39 @@
       ></el-progress>
 
       <el-tree
-        :data="this.course.content"
+        :data="this.course.lessons"
         :props="defaultProps"
         @node-click="handleNodeClick"
       ></el-tree>
     </div>
-    <div
-      class="content"
-      v-if="currentLessonLabel.length != 0 && !lessonLoading"
-    >
-      <a>{{ currentLessonLabel }}</a>
+    <div class="content" v-if="currentLesson.id && !lessonLoading">
+      <a>{{ currentLesson.label }}</a>
       <el-divider style="margin: 5px"></el-divider>
 
       <StudyRender
-        :render="currentLesson.pages[active]"
+        :render="currentLesson.content[active]"
         style="margin-bottom: 20px"
       ></StudyRender>
 
+      <div v-if="lessonEnd">
+        <h1>Вы завершили урок! 🎆</h1>
+      </div>
+
       <el-steps :active="active" finish-status="success">
-        <el-step
-          v-for="n in currentLesson.pages.length"
-          :key="n"
-          :title="n"
-        ></el-step>
+        <el-step v-for="n in currentLesson.content.length" :key="n"></el-step>
       </el-steps>
       <el-button style="margin-top: 12px" @click="back">Назад</el-button>
-      <el-button type="success" style="margin-top: 12px" @click="next"
-        >Далее</el-button
-      >
+      <el-button type="success" style="margin-top: 12px" @click="next">{{
+        lessonEnd ? "Завершить урок" : "Далее"
+      }}</el-button>
     </div>
   </div>
 </template>
 
 <script>
-import { fetchLesson, fetchUserCourse } from "@/api/api";
+import { baseURL, fetchUserCourse } from "@/api/api";
 import StudyRender from "@/components/StudyRender.vue";
+import axios from "axios";
 
 export default {
   components: { StudyRender },
@@ -54,39 +52,95 @@ export default {
         children: "children",
         label: "label",
       },
-      currentLessonLabel: "",
-      currentLesson: {},
+      currentLesson: {
+        content: [],
+        label: "",
+        id: null,
+      },
       lessonLoading: false,
     };
   },
+  computed: {
+    lessonEnd() {
+      return this.active == this.currentLesson.content.length;
+    },
+  },
   methods: {
     next() {
-      if (this.active++ > 2) this.active = 2;
+      if (this.lessonEnd) {
+        this.lessonComplete();
+      } else if (this.active++ > this.currentLesson.content.length)
+        this.active = this.currentLesson.content.length;
     },
     back() {
       if (this.active-- <= 0) this.active = 0;
     },
-    async handleNodeClick(t) {
-      if ("id" in t) {
-        this.currentLessonLabel = t.label;
-        await this.loadLesson(t.id);
-      }
+    handleNodeClick(t) {
+      if ("id" in t) this.currentLesson = t;
     },
-    async loadLesson(id) {
-      this.lessonLoading = true;
-      this.currentLesson = await fetchLesson(id);
-      this.lessonLoading = false;
+    async lessonComplete() {
+      console.log(this.isLessonCompleted(this.currentLesson.id));
+      if (this.isLessonCompleted(this.currentLesson.id)) {
+        this.$message({
+          title: "",
+          message: "Вы уже завершили урок",
+          duration: 1500,
+          type: "info",
+        });
+        return;
+      }
+
+      const result = await axios.post(baseURL + "/me/lessonComplete", {
+        courseId: this.course._id,
+        login: this.$store.state.auth.user.login,
+        token: this.$store.state.auth.token,
+        lessonId: this.currentLesson.id,
+      });
+      console.log(result);
+      if (result.status == 200)
+        this.$store.dispatch("auth/setData", { user: result.data });
+    },
+    isLessonCompleted(id) {
+      let _course = this.getUserCourse();
+      return _course.completedLessons.filter((item) => item == id).length != 0;
+    },
+    getUserCourse() {
+      let _course = this.$store.state.auth.user.userCourses.filter((item) => {
+        return item.courseId == this.course._id;
+      })[0];
+      return _course;
+    },
+    getFollowingLesson() {
+      for (var i = 0; i < this.course.lessons.length; i += 1) {
+        for (var l = 0; l < this.course.lessons[l].children.length; l += 1) {
+          let isCompleted = this.isLessonCompleted(
+            Number.parseInt(this.course.lessons[i].children[l].id)
+          );
+          console.log(isCompleted);
+          if (isCompleted) continue;
+          return this.course.lessons[i].children[l];
+        }
+      }
+      return null;
+    },
+    courseEnd() {
+      console.log("course end");
     },
   },
   async mounted() {
-    this.course = await fetchUserCourse(0);
+    this.course = await fetchUserCourse(this.$route.params.id);
+    let lesson = this.getFollowingLesson();
+    if (lesson == null) this.courseEnd();
+    else {
+      this.currentLesson = lesson;
+    }
   },
 };
 </script>
 
 <style scoped>
 .wrapper {
-  margin-top: 100px;
+  padding-top: 100px;
   width: 90%;
   margin: 0px auto;
   display: flex;
@@ -99,5 +153,7 @@ export default {
   width: 100%;
   padding: 20px;
   flex-direction: column;
+  align-items: left;
+  text-align: left;
 }
 </style>

@@ -63,9 +63,13 @@ export default {
     logout(context) {
       context.commit("clear");
     },
+    setData({ commit }, data) {
+      commit("saveSession", data);
+    },
   },
   mutations: {
     saveSession(state, data) {
+      console.log(data);
       if (data.token) {
         state.token = data.token;
         localStorage.setItem("token", state.token);

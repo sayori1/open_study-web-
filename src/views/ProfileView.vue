@@ -35,7 +35,7 @@ export default {
   },
   methods: {
     exit() {
-      this.$store.dispatch("auth/exit");
+      this.$store.dispatch("auth/logout");
       this.$router.back();
     },
   },
