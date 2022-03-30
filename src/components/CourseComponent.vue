@@ -47,8 +47,9 @@ export default {
         return;
       }
       let _course = this.$store.state.auth.user.userCourses.filter((item) => {
-        return item._id == this.course._id;
+        return item.courseId == this.course._id;
       })[0];
+
       if (_course) this.$router.push(`/study/${this.course._id}`);
       else this.$router.push(`/course/${this.course._id}`);
     },

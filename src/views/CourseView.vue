@@ -84,7 +84,7 @@ export default {
         this.$store.state.auth.user.login,
         this.$store.state.auth.token
       );
-      
+
       if (result.status == 200) {
         await this.$store.dispatch("auth/refresh");
         this.$notify({
