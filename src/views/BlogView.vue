@@ -1,10 +1,13 @@
 <template>
-  <div class="wrapper"></div>
+  <div class="wrapper">
+    <ArticleComponent></ArticleComponent>
+  </div>
 </template>
 
 <script>
+import ArticleComponent from "@/components/ArticleComponent.vue";
 export default {
-  components: {},
+  components: { ArticleComponent },
   data() {
     return {};
   },

@@ -9,7 +9,7 @@ export async function _fetchCourses() {
 
 export async function fetchCourses(tag) {
   console.log(tag);
-  var response = await axios.get(baseURL + "/rest/course");
+  var response = await axios.get(baseURL + `/rest/course?tag=${tag}`);
   return response.data;
 }
 export async function getFeauturedTags() {

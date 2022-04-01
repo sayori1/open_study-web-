@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper" v-if="!courseEnd">
     <div class="navbar">
       <el-progress
         :percentage="0"
@@ -35,6 +35,14 @@
       }}</el-button>
     </div>
   </div>
+  <div class="wrapper" v-if="courseEnd">
+    <div class="content">
+      <h1>Вы полностью завершили курс! 🎆</h1>
+      <a>Вы полностью завершили курс {{ course.name }}</a>
+      <br />
+      <a>Надеюсь, вы научились чему-то новому!</a>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -58,6 +66,7 @@ export default {
         id: null,
       },
       lessonLoading: false,
+      courseEnd: false,
     };
   },
   computed: {
@@ -96,9 +105,16 @@ export default {
         token: this.$store.state.auth.token,
         lessonId: this.currentLesson.id,
       });
-      console.log(result);
       if (result.status == 200)
         this.$store.dispatch("auth/setData", { user: result.data });
+
+      let lesson = this.getFollowingLesson();
+      if (lesson == null) {
+        this.active = -1;
+        this.courseEnd = true;
+      } else {
+        this.currentLesson = lesson;
+      }
     },
     isLessonCompleted(id) {
       let _course = this.getUserCourse();
@@ -112,25 +128,21 @@ export default {
     },
     getFollowingLesson() {
       for (var i = 0; i < this.course.lessons.length; i += 1) {
-        for (var l = 0; l < this.course.lessons[l].children.length; l += 1) {
+        for (var l = 0; l < this.course.lessons[i].children.length; l += 1) {
           let isCompleted = this.isLessonCompleted(
             Number.parseInt(this.course.lessons[i].children[l].id)
           );
-          console.log(isCompleted);
           if (isCompleted) continue;
           return this.course.lessons[i].children[l];
         }
       }
       return null;
     },
-    courseEnd() {
-      console.log("course end");
-    },
   },
   async mounted() {
     this.course = await fetchUserCourse(this.$route.params.id);
     let lesson = this.getFollowingLesson();
-    if (lesson == null) this.courseEnd();
+    if (lesson == null) this.courseEnd = true;
     else {
       this.currentLesson = lesson;
     }

@@ -4,7 +4,7 @@
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane
           label="Вход"
-          name="log in"
+          name="Login"
           style="
             display: flex;
             flex-direction: column;
@@ -27,7 +27,7 @@
         </el-tab-pane>
         <el-tab-pane
           label="Регистрация"
-          name="register"
+          name="Register"
           style="
             display: flex;
             flex-direction: column;
@@ -72,7 +72,7 @@ export default {
   components: {},
   data() {
     return {
-      activeName: "log in",
+      activeName: "Login",
       login: {
         email: "",
         password: "",

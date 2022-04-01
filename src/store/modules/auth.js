@@ -16,7 +16,7 @@ export default {
   },
   getters: {
     isLoggedIn: ({ token }) => !!token,
-    isAdmin: ({ user }) => user.isAdmin,
+    isAdmin: ({ user }) => user?.isAdmin,
   },
   actions: {
     async login({ commit }, data) {

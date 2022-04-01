@@ -2,8 +2,8 @@
   <div>
     <el-input v-model="courseName" placeholder="Название курса" />
     <el-input
-      v-model="category"
-      placeholder="Категория"
+      v-model="tags"
+      placeholder="Тэги (через запятую)"
       style="margin-top: 10px"
     >
     </el-input>
@@ -115,7 +115,7 @@ export default {
       status: "",
       id: null,
 
-      category: "",
+      tags: "",
     };
   },
   watch: {
@@ -166,7 +166,7 @@ export default {
             children: [
               {
                 id: i,
-                label: this.metadata[i].heading,
+                label: this.metadata[i].name,
                 content: this.data[i],
               },
             ],
@@ -226,7 +226,7 @@ export default {
         lessons: tree,
         contentRaw: this.content,
         metadataRaw: this.metadata,
-        category: this.category,
+        tags: this.tags.split(", "),
       });
 
       if (result.status == 200) {
@@ -256,7 +256,7 @@ export default {
         lessons: tree,
         contentRaw: this.content,
         metadataRaw: this.metadata,
-        category: this.category,
+        tags: this.tags.split(", "),
       });
 
       if (result.status == 200) {
@@ -291,7 +291,7 @@ export default {
         this.content = course.data.contentRaw;
         this.metadata = course.data.metadataRaw;
         this.id = course.data._id;
-        this.category = course.data.category;
+        this.tags = course.data.tags.join(", ");
       }
     },
   },

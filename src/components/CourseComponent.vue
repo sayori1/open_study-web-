@@ -88,7 +88,7 @@ export default {
   box-shadow: 0px 0px 10px rgba(200, 200, 200, 200);
   margin: 15px;
   display: flex;
-  border-radius: 5px;
+  border-radius: 10px;
   flex-direction: column;
   justify-content: space-between;
   text-align: left;
